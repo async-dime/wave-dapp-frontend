@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { ethers } from 'ethers';
-import './App.css';
+import './styles/App.css';
 import wavePortalJson from './utils/WavePortal.json';
-import { keepTheme } from './styles/theme';
+import { keepTheme } from './utils/Theme';
 import Toggle from './components/Toggle';
 
 const App = () => {
@@ -15,7 +15,7 @@ const App = () => {
   //All state property to store all waves
   const [allWaves, setAllWaves] = useState([]);
   // we got this address from terminal output of deployed contract on rinkeby testnet before
-  const contractAddress = '0xFBdA12109A9409B5AD4d549a7cE0586897A534bD';
+  const contractAddress = process.env.REACT_APP_RINKEBY_ADDRESS;
   /**
    * this is json file that compiler make when we create the smart contract
    * location on the hardhat project:
@@ -97,7 +97,7 @@ const App = () => {
          * Execute the actual wave from your smart contract
          */
         const waveTxn = await wavePortalContract.wave(waveMessage, {
-          gasLimit: 500000,
+          gasLimit: 100000,
         });
         console.log('Mining...', waveTxn.hash);
 
@@ -177,9 +177,6 @@ const App = () => {
       <div className="dataContainer">
         <Toggle />
         <div className="header">
-          <span role="img" aria-label="waving hand">
-            👋
-          </span>{' '}
           Halo!
         </div>
         <div className="bio">
@@ -205,8 +202,10 @@ const App = () => {
               value={waveMessage}
               onChange={(e) => setWaveMessage(e.target.value)}
             />
-            <button className="waveButton btnGrad" onClick={wave}>
-              Wave at Me!
+            <button className="waveButton btnGrad" onClick={wave} disabled={!waveMessage}>
+              <span role="img" aria-label="waving hand">
+                👋
+              </span>
             </button>
           </>
         )}
@@ -219,13 +218,16 @@ const App = () => {
 
         {allWaves.map((wave, index) => {
           return (
-            <div
-              key={index}
-              className="waveMessage"
-            >
-              <div className="waveMessageText"><b>Address:</b> {wave.address}</div>
-              <div className="waveMessageText"><b>Time:</b> {wave.timestamp.toString()}</div>
-              <div className="waveMessageText"><b>Message:</b> {wave?.message}</div>
+            <div key={index} className="waveMessage">
+              <div className="waveMessageText">
+                <b>Address:</b> {wave.address}
+              </div>
+              <div className="waveMessageText">
+                <b>Time:</b> {wave.timestamp.toString()}
+              </div>
+              <div className="waveMessageText">
+                <b>Message:</b> {wave?.message}
+              </div>
             </div>
           );
         })}
