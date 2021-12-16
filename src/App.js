@@ -10,17 +10,42 @@ const App = () => {
    * Just a state variable we use to store our user's public wallet.
    */
   const [currentAccount, setCurrentAccount] = useState('');
+  const [waveMessage, setWaveMessage] = React.useState('');
 
+  //All state property to store all waves
+  const [allWaves, setAllWaves] = useState([]);
   // we got this address from terminal output of deployed contract on rinkeby testnet before
-  const contractAddress = '0xe6FBB1b9d922d922A801424F77f2EdBD6ba254c0';
-
+  const contractAddress = '0x441209714EA1896ef4801ac91c7D9e7cbb01Ab9e';
   /**
    * this is json file that compiler make when we create the smart contract
    * location on the hardhat project:
    * `artifacts/contracts/WavePortal.sol/WavePortal.json`
    * however, we only need the abi prop.
-   *  */
+   */
   const contractABI = wavePortalJson.abi;
+
+  /**
+   * Implement your connectWallet method here
+   */
+  const connectWallet = async () => {
+    try {
+      const { ethereum } = window;
+
+      if (!ethereum) {
+        alert('Get MetaMask!');
+        return;
+      }
+
+      const accounts = await ethereum.request({
+        method: 'eth_requestAccounts',
+      });
+
+      console.log('Connected', accounts[0]);
+      setCurrentAccount(accounts[0]);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const checkIfWalletIsConnected = async () => {
     try {
@@ -52,29 +77,6 @@ const App = () => {
     }
   };
 
-  /**
-   * Implement your connectWallet method here
-   */
-  const connectWallet = async () => {
-    try {
-      const { ethereum } = window;
-
-      if (!ethereum) {
-        alert('Get MetaMask!');
-        return;
-      }
-
-      const accounts = await ethereum.request({
-        method: 'eth_requestAccounts',
-      });
-
-      console.log('Connected', accounts[0]);
-      setCurrentAccount(accounts[0]);
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
   const wave = async () => {
     try {
       const { ethereum } = window;
@@ -94,7 +96,9 @@ const App = () => {
         /*
          * Execute the actual wave from your smart contract
          */
-        const waveTxn = await wavePortalContract.wave();
+        const waveTxn = await wavePortalContract.wave(waveMessage, {
+          gasLimit: 500000,
+        });
         console.log('Mining...', waveTxn.hash);
 
         await waveTxn.wait();
@@ -110,10 +114,59 @@ const App = () => {
     }
   };
 
+  /*
+   * Create a method that gets all waves from your contract
+   */
+  const getAllWaves = async () => {
+    try {
+      const { ethereum } = window;
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const wavePortalContract = new ethers.Contract(
+          contractAddress,
+          contractABI,
+          signer
+        );
+
+        /*
+         * Call the getAllWaves method from your Smart Contract
+         */
+        const waves = await wavePortalContract.getAllWaves();
+
+        /*
+         * We only need address, timestamp, and message in our UI so let's
+         * pick those out
+         */
+        let wavesCleaned = [];
+        waves.forEach((wave) => {
+          wavesCleaned.push({
+            address: wave.waver,
+            timestamp: new Date(wave.timestamp * 1000),
+            message: wave.message,
+          });
+        });
+
+        /*
+         * Store our data in React State
+         */
+        setAllWaves(wavesCleaned);
+      } else {
+        console.log("Ethereum object doesn't exist!");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   // runs when page loads
   useEffect(() => {
     checkIfWalletIsConnected();
   }, []);
+
+  useEffect(() => {
+    getAllWaves();
+  });
 
   useEffect(() => {
     keepTheme();
@@ -127,27 +180,55 @@ const App = () => {
           <span role="img" aria-label="waving hand">
             👋
           </span>{' '}
-          Hey there!
+          Halo!
         </div>
-
         <div className="bio">
           This is Ableh{' '}
           <span role="img" aria-label="man raising hand">
             🙋‍♂️
           </span>
           <br />
+          I'm from Indonesia 🇮🇩
+          <br />
           Connect your Ethereum wallet and wave 👋 at me!
         </div>
 
-        <button className="waveButton btn-grad" onClick={wave}>
-          Wave at Me!
-        </button>
+        {currentAccount && (
+          <>
+            <textarea
+              name="waveMessage"
+              placeholder="Tell me which country you're from 🌎!"
+              rows="3"
+              data-min-rows="3"
+              type="text"
+              id="message"
+              value={waveMessage}
+              onChange={(e) => setWaveMessage(e.target.value)}
+            />
+            <button className="waveButton btnGrad" onClick={wave}>
+              Wave at Me!
+            </button>
+          </>
+        )}
 
         {!currentAccount && (
-          <button className="waveButton btn-grad" onClick={connectWallet}>
+          <button className="waveButton btnGrad" onClick={connectWallet}>
             Connect Wallet
           </button>
         )}
+
+        {allWaves.map((wave, index) => {
+          return (
+            <div
+              key={index}
+              className="waveMessage"
+            >
+              <div className="waveMessageText"><b>Address:</b> {wave.address}</div>
+              <div className="waveMessageText"><b>Time:</b> {wave.timestamp.toString()}</div>
+              <div className="waveMessageText"><b>Message:</b> {wave?.message}</div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

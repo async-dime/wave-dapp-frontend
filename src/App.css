@@ -27,6 +27,23 @@ nav {
   color: var(--light-text);
 }
 
+textarea {
+  display: block;
+  box-sizing: padding-box;
+  overflow: hidden;
+  padding: 10px;
+  width: 250px;
+  font-size: 14px;
+  margin: 20px auto;
+  border-radius: 6px;
+  border: 0;
+}
+textarea:focus {
+  box-shadow: 0 0 10px var(--button-border);
+  border: none;
+  outline: none;
+}
+
 .mainContainer {
   display: flex;
   justify-content: center;
@@ -62,7 +79,7 @@ nav {
   border-radius: 5px;
 }
 
-.btn-grad {
+.btnGrad {
   background-image: linear-gradient(
     to right,
     #d38312 0%,
@@ -70,7 +87,7 @@ nav {
     #d38312 90%
   );
 }
-.btn-grad {
+.btnGrad {
   margin: 10px;
   padding: 15px 45px;
   text-align: center;
@@ -82,9 +99,22 @@ nav {
   display: block;
 }
 
-.btn-grad:hover {
-  box-shadow: 0 0 .5px .5px var(--button-border);
+.btnGrad:hover {
+  box-shadow: 0 0 0.5px 0.5px var(--button-border);
   background-position: right center; /* change the direction of the change here */
   color: #fff;
   text-decoration: none;
+}
+
+.waveMessage {
+  background-color: var(--dark-text);
+  color: var(--light-background);
+  margin-top: 16px;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.waveMessageText {
+  font-size: 12px;
+  text-align: 'center';
 }
