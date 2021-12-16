@@ -15,7 +15,7 @@ const App = () => {
   //All state property to store all waves
   const [allWaves, setAllWaves] = useState([]);
   // we got this address from terminal output of deployed contract on rinkeby testnet before
-  const contractAddress = '0x441209714EA1896ef4801ac91c7D9e7cbb01Ab9e';
+  const contractAddress = '0xFBdA12109A9409B5AD4d549a7cE0586897A534bD';
   /**
    * this is json file that compiler make when we create the smart contract
    * location on the hardhat project:
