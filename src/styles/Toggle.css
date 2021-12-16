@@ -1,0 +1,182 @@
+:root {
+  /** sunny side **/
+  --blue-background: #c2e9f6;
+  --blue-border: #108dad;
+  --blue-color: #96dcee;
+  --yellow-background: #fffaa8;
+  --yellow-border: #f5eb71;
+  /** dark side **/
+  --indigo-background: #808fc7;
+  --indigo-border: #808bbc;
+  --indigo-color: #6b7abb;
+  --gray-border: #e8e8ea;
+  --gray-dots: #cfcfd3;
+}
+
+@keyframes reverse {
+  0% {
+    left: 23px;
+    width: 20px;
+  }
+  60% {
+    left: 3px;
+    width: 20px;
+  }
+  100% {
+    left: 0px;
+  }
+}
+
+@keyframes switch {
+  0% {
+    left: 0px;
+  }
+  60% {
+    left: 3px;
+    width: 20px;
+  }
+  100% {
+    left: 23px;
+    width: 20px;
+  }
+}
+
+.toggle--checkbox {
+  opacity: 0;
+}
+
+.toggle--checkbox:focus + .toggle--label {
+  outline: solid 3px var(--button-border);
+  transition: outline 250ms ease-in;
+}
+
+.container--toggle {
+  display: grid;
+  place-items: center;
+  min-height: 30px;
+  position: relative;
+  grid-area: toggle;
+  margin: 20px;
+}
+
+/* background */
+.toggle--label {
+  width: 50px;
+  height: 27px;
+  background: var(--indigo-color);
+  border-radius: 500px;
+  border: 3px solid var(--indigo-border);
+  display: flex;
+  position: relative;
+  transition: all 250ms ease-in;
+  color: var(--indigo-color);
+}
+
+.toggle--checkbox:checked + .toggle--label {
+  background: var(--blue-color);
+  color: var(--blue-color);
+  border-color: var(--blue-border);
+}
+
+/* sun and moon */
+.toggle--checkbox:checked + .toggle--label:before {
+  animation-name: reverse;
+  animation-duration: 250ms;
+  animation-fill-mode: forwards;
+  transition: all 250ms ease-in;
+  background: var(--yellow-background);
+  border-color: var(--yellow-border);
+}
+
+.toggle--label:before {
+  animation-name: switch;
+  animation-duration: 250ms;
+  animation-fill-mode: forwards;
+  content: '';
+  width: 20px;
+  height: 20px;
+  border: 3px solid var(--gray-border);
+  position: absolute;
+  border-radius: 20px;
+  background: white;
+}
+
+/* moon dimples */
+.toggle--label:after {
+  transition-delay: 0ms;
+  transition: all 250ms ease-in;
+  position: absolute;
+  content: '';
+  box-shadow: var(--gray-dots) -17px 2px 0 2px,
+    var(--gray-dots) -12px 10px 0 -1px;
+  left: 50px;
+  top: 5px;
+  width: 6px;
+  height: 6px;
+  background: transparent;
+  border-radius: 50%;
+  opacity: 1;
+}
+
+.toggle--checkbox:checked + .toggle--label:after {
+  /* transition-delay: 100ms; */
+  opacity: 0;
+}
+
+/* clouds */
+.toggle--checkbox:checked + .toggle--label .toggle--label-background {
+  border-radius: 5px;
+  width: 4px;
+  left: 35px;
+  top: 11px;
+}
+.toggle--checkbox:checked + .toggle--label .toggle--label-background:before {
+  border-radius: 5px;
+  top: 3px;
+  left: -7px;
+  width: 15px;
+  height: 5px;
+}
+
+.toggle--checkbox:checked + .toggle--label .toggle--label-background:after {
+  border-radius: 5px;
+  top: -4px;
+  left: -3px;
+  width: 15px;
+  height: 5px;
+}
+
+/* stars */
+.toggle--label-background {
+  border-radius: 50%;
+  position: relative;
+  background: white;
+  left: 12px;
+  width: 3px;
+  height: 3px;
+  transition: all 250ms ease-in;
+  top: 15px;
+}
+
+.toggle--label-background:before {
+  border-radius: 50%;
+  position: absolute;
+  background: white;
+  left: -8px;
+  width: 3px;
+  height: 3px;
+  transition: all 250ms ease-in;
+  top: -3px;
+  content: '';
+}
+
+.toggle--label-background:after {
+  border-radius: 50%;
+  position: absolute;
+  background: white;
+  width: 3px;
+  height: 3px;
+  transition: all 250ms ease-in;
+  top: -10px;
+  content: '';
+}

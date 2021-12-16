@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import '../styles/toggle.css';
-import { setTheme } from '../styles/theme';
+import '../styles/Toggle.css';
+import { setTheme } from '../utils/Theme';
 
 function Toggle() {
   // false = dark mode because of the way I wrote the CSS

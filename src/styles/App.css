@@ -1,0 +1,144 @@
+.theme-dark {
+  --dark-text: #292929;
+  --light-text: #f9f8f8;
+  --dark-background: #2f4550;
+  --light-background: #586f7c;
+  --accent: #b8dbd9;
+  --button-border: #b8dbd9;
+}
+
+.theme-light {
+  --dark-text: #5e4b56;
+  --light-text: #5e4b56;
+  --dark-background: #dbe7e4;
+  --light-background: #eddcd2;
+  --accent: #dbe7e4;
+  --button-border: #5e4b56;
+}
+
+html,
+#root {
+  background-color: var(--dark-background);
+  color: var(--dark-text);
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+nav {
+  background-color: var(--dark-background);
+  color: var(--light-text);
+}
+
+textarea {
+  display: block;
+  box-sizing: padding-box;
+  overflow: hidden;
+  padding: 10px;
+  width: 250px;
+  font-size: 14px;
+  margin: 20px auto;
+  border-radius: 6px;
+  border: 0;
+}
+textarea:focus {
+  box-shadow: 0 0 10px var(--button-border);
+  border: none;
+  outline: none;
+}
+
+.mainContainer {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-top: 32px;
+}
+
+.dataContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 600px;
+}
+
+.header {
+  text-align: center;
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--light-text);
+}
+
+.bio {
+  text-align: center;
+  color: var(--light-text);
+  margin-top: 16px;
+}
+
+.waveButton {
+  cursor: pointer;
+  margin-top: 16px;
+  padding: 8px;
+  border: 0;
+  border-radius: 5px;
+}
+.mainContainer .dataContainer .waveButton:disabled {
+  background-image: none;
+  background-color: var(--dark-text) !important;
+  color: var(--light-background) !important;
+  color: #ccc;
+  cursor: no-drop;
+}
+
+.btnGrad {
+  background-image: linear-gradient(
+    to right,
+    #d38312 0%,
+    #a83279 51%,
+    #d38312 90%
+  );
+}
+.btnGrad {
+  margin: 10px;
+  padding: 15px 45px;
+  text-align: center;
+  font-weight: bold;
+  transition: 0.5s;
+  background-size: 300% auto;
+  color: #fff;
+  border-radius: 10px;
+  display: block;
+}
+
+.btnGrad:hover {
+  box-shadow: 0 0 0.5px 0.5px var(--button-border);
+  background-position: right center;
+  color: #fff;
+  text-decoration: none;
+}
+
+.waveMessage {
+  background-color: var(--dark-text);
+  color: var(--light-background);
+  margin-top: 16px;
+  padding: 10px;
+  border-radius: 10px;
+}
+.waveMessage:last-child {
+  margin-bottom: 32px;
+}
+
+.waveMessageText {
+  font-size: 12px;
+  text-align: 'center';
+}
