@@ -20,10 +20,11 @@ html,
 #root {
   background-color: var(--dark-background);
   color: var(--dark-text);
+  margin: 0;
 }
 
 body {
-  margin: 0;
+  padding: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
@@ -100,7 +101,9 @@ textarea:focus {
   cursor: no-drop;
 }
 
-.btnGrad {
+.header,
+.btnGrad,
+.footerText {
   background-image: linear-gradient(
     to right,
     #d38312 0%,
@@ -108,6 +111,13 @@ textarea:focus {
     #d38312 90%
   );
 }
+.header,
+.footerText {
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
 .btnGrad {
   margin: 10px;
   padding: 15px 45px;
@@ -119,7 +129,6 @@ textarea:focus {
   border-radius: 10px;
   display: block;
 }
-
 .btnGrad:hover {
   box-shadow: 0 0 0.5px 0.5px var(--button-border);
   background-position: right center;
@@ -135,10 +144,31 @@ textarea:focus {
   border-radius: 10px;
 }
 .waveMessage:last-child {
-  margin-bottom: 32px;
+  margin-bottom: 30px;
 }
 
 .waveMessageText {
   font-size: 12px;
   text-align: 'center';
+}
+
+.footerContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  width: 100%;
+  bottom: 0;
+  left: 0;
+  padding-bottom: 45px;
+}
+
+.twitterLogo {
+  width: 25px;
+  height: 25px;
+}
+
+.footerText {
+  font-size: 16px;
+  font-weight: bold;
 }

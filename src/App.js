@@ -4,18 +4,16 @@ import './styles/App.css';
 import wavePortalJson from './utils/WavePortal.json';
 import { keepTheme } from './utils/Theme';
 import Toggle from './components/Toggle';
+import twitterLogo from './assets/twitter.svg';
 
 const App = () => {
-  /*
-   * Just a state variable we use to store our user's public wallet.
-   */
-  const [currentAccount, setCurrentAccount] = useState('');
-  const [waveMessage, setWaveMessage] = React.useState('');
+  const [currentAccount, setCurrentAccount] = useState(''); // State variable we use to store our user's public wallet.
+  const [waveMessage, setWaveMessage] = React.useState('');  // State variable we use to store our message.
+  const [allWaves, setAllWaves] = useState([]); // All state property to store all waves
+  const contractAddress = process.env.REACT_APP_RINKEBY_ADDRESS; // we got this address from terminal output of deployed contract on rinkeby testnet before
+  const TWITTER_HANDLE = 'p0tat0H8';
+  const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
 
-  //All state property to store all waves
-  const [allWaves, setAllWaves] = useState([]);
-  // we got this address from terminal output of deployed contract on rinkeby testnet before
-  const contractAddress = process.env.REACT_APP_RINKEBY_ADDRESS;
   /**
    * this is json file that compiler make when we create the smart contract
    * location on the hardhat project:
@@ -63,7 +61,7 @@ const App = () => {
       /*
        * Check if we're authorized to access the user's wallet
        */
-      const accounts = await ethereum.request({ method: 'eth_accounts' });
+      const accounts = await ethereum.request({ method: 'eth_accounts' });  
 
       if (accounts.length !== 0) {
         const account = accounts[0];
@@ -97,7 +95,7 @@ const App = () => {
          * Execute the actual wave from your smart contract
          */
         const waveTxn = await wavePortalContract.wave(waveMessage, {
-          gasLimit: 1000000,
+          gasLimit: 300000,
         });
         console.log('Mining...', waveTxn.hash);
 
@@ -176,9 +174,7 @@ const App = () => {
     <div className="mainContainer">
       <div className="dataContainer">
         <Toggle />
-        <div className="header">
-          Halo!
-        </div>
+        <div className="header">Halo!</div>
         <div className="bio">
           This is Ableh{' '}
           <span role="img" aria-label="man raising hand">
@@ -202,7 +198,11 @@ const App = () => {
               value={waveMessage}
               onChange={(e) => setWaveMessage(e.target.value)}
             />
-            <button className="waveButton btnGrad" onClick={wave} disabled={!waveMessage}>
+            <button
+              className="waveButton btnGrad"
+              onClick={wave}
+              disabled={!waveMessage}
+            >
               <span role="img" aria-label="waving hand">
                 👋
               </span>
@@ -231,6 +231,15 @@ const App = () => {
             </div>
           );
         })}
+        <footer className="footerContainer">
+          <img alt="Twitter Logo" className="twitterLogo" src={twitterLogo} />{' '}
+          <a
+            className="footerText"
+            href={TWITTER_LINK}
+            target="_blank"
+            rel="noopener noreferrer"
+          >{`built by @${TWITTER_HANDLE}`}</a>
+        </footer>
       </div>
     </div>
   );
