@@ -100,11 +100,11 @@ const App = () => {
         setAllWaves(wavesCleaned);
       } else {
         console.log("Ethereum object doesn't exist!");
-        showToast('error', "Ethereum object doesn't exist!");
+        showToast('danger', "Ethereum object doesn't exist!");
       }
     } catch (error) {
       console.log(error);
-      showToast('error', error);
+      showToast('danger', error);
     }
   };
 
@@ -112,7 +112,7 @@ const App = () => {
     try {
       if (!ethereum) {
         console.log('Make sure you have MetaMask!');
-        showToast('warning', 'Make sure you have MetaMask!');
+        showToast('danger', 'Make sure you have MetaMask!');
         return;
       } else {
         console.log('We have the ethereum object', ethereum);
@@ -127,11 +127,11 @@ const App = () => {
         showToast('success', `Found an authorized account: ${account}.`);
       } else {
         console.log('No authorized account found.');
-        showToast('error', 'No authorized account found.');
+        showToast('danger', 'No authorized account found.');
       }
     } catch (error) {
       console.log(error);
-      showToast('error', error);
+      showToast('danger', error);
     }
   };
 
@@ -142,7 +142,7 @@ const App = () => {
     try {
       if (!ethereum) {
         alert('Please install MetaMask!');
-        showToast('error', 'Please install MetaMask!');
+        showToast('danger', 'Please install MetaMask!');
         return;
       }
 
@@ -157,7 +157,7 @@ const App = () => {
       getAllWaves();
     } catch (error) {
       console.log(error);
-      showToast('error', error);
+      showToast('danger', error);
     }
   };
 
@@ -188,11 +188,11 @@ const App = () => {
         showToast('success', `Mined -- ${waveTxn.hash}`);
       } else {
         console.log("Ethereum object doesn't exist!");
-        showToast('error', "Ethereum object doesn't exist!");
+        showToast('danger', "Ethereum object doesn't exist!");
       }
     } catch (error) {
       console.log(error);
-      showToast('error', error);
+      showToast('danger', error);
     }
   };
 
