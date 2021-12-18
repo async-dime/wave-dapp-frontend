@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { ethers } from 'ethers';
 import './styles/App.css';
 import wavePortalJson from './utils/WavePortal.json';
@@ -21,8 +21,6 @@ const App = () => {
   const contractABI = wavePortalJson.abi; // this is json file that compiler make when we create the smart contract. location: artifacts/contracts/WavePortal.sol/WavePortal.json`
   const TWITTER_HANDLE = 'p0tat0H8';
   const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
-
-  const { ethereum } = window;
 
   let toastProperties = null;
 
@@ -73,72 +71,82 @@ const App = () => {
     setList([...list, toastProperties]);
   };
 
-  const getAllWaves = async () => {
-    try {
-      if (ethereum) {
-        const provider = new ethers.providers.Web3Provider(ethereum);
-        const signer = provider.getSigner();
-        const wavePortalContract = new ethers.Contract(
-          contractAddress,
-          contractABI,
-          signer
-        );
+  const getAllWaves = useCallback(
+    (async () => {
+      const { ethereum } = window;
 
-        const waves = await wavePortalContract.getAllWaves(); // Call the getAllWaves method from your Smart Contract
+      try {
+        if (ethereum) {
+          const provider = new ethers.providers.Web3Provider(ethereum);
+          const signer = provider.getSigner();
+          const wavePortalContract = new ethers.Contract(
+            contractAddress,
+            contractABI,
+            signer
+          );
 
-        /*
-         * We only need address, timestamp, and message in our UI
-         */
-        const wavesCleaned = waves.map((wave) => {
-          return {
-            address: wave.waver,
-            timestamp: new Date(wave.timestamp * 1000),
-            message: wave.message,
-          };
-        });
+          const waves = await wavePortalContract.getAllWaves(); // Call the getAllWaves method from your Smart Contract
 
-        setAllWaves(wavesCleaned);
-      } else {
-        console.log("Ethereum object doesn't exist!");
-        // showToast('danger', "Ethereum object doesn't exist!");
+          /*
+           * We only need address, timestamp, and message in our UI
+           */
+          const wavesCleaned = waves.map((wave) => {
+            return {
+              address: wave.waver,
+              timestamp: new Date(wave.timestamp * 1000),
+              message: wave.message,
+            };
+          });
+
+          setAllWaves(wavesCleaned);
+        } else {
+          console.log("Ethereum object doesn't exist!");
+          // showToast('danger', "Ethereum object doesn't exist!");
+        }
+      } catch (error) {
+        console.log(error);
+        showToast('danger', error);
       }
-    } catch (error) {
-      console.log(error);
-      showToast('danger', error);
-    }
-  };
+    })()
+  );
 
-  const checkIfWalletIsConnected = async () => {
-    try {
-      if (!ethereum) {
-        console.log('Make sure you have MetaMask!');
-        showToast('danger', 'Make sure you have MetaMask!');
-        return;
-      } else {
-        console.log('We have the ethereum object', ethereum);
-        showToast('success', `We have the ethereum object: ${ethereum}`);
+  const checkIfWalletIsConnected = useCallback(
+    (async () => {
+      const { ethereum } = window;
+
+      try {
+        if (!ethereum) {
+          console.log('Make sure you have MetaMask!');
+          showToast('danger', 'Make sure you have MetaMask!');
+          return;
+        } else {
+          console.log('We have the ethereum object', ethereum);
+          showToast('success', `We have the ethereum object: ${ethereum}`);
+        }
+
+        const accounts = await ethereum.request({ method: 'eth_accounts' }); // Check if we're authorized to access the user's wallet
+
+        if (accounts.length !== 0) {
+          const account = accounts[0];
+          console.log(`Found an authorized account: ${account}.`);
+          showToast('success', `Found an authorized account: ${account}.`);
+        } else {
+          console.log('No authorized account found.');
+          showToast('danger', 'No authorized account found.');
+        }
+      } catch (error) {
+        console.log(error);
+        showToast('danger', error);
       }
-
-      const accounts = await ethereum.request({ method: 'eth_accounts' }); // Check if we're authorized to access the user's wallet
-
-      if (accounts.length !== 0) {
-        const account = accounts[0];
-        console.log(`Found an authorized account: ${account}.`);
-        showToast('success', `Found an authorized account: ${account}.`);
-      } else {
-        console.log('No authorized account found.');
-        showToast('danger', 'No authorized account found.');
-      }
-    } catch (error) {
-      console.log(error);
-      showToast('danger', error);
-    }
-  };
+    })()
+  );
 
   /**
    * Implement your connectWallet method here
    */
   const connectWallet = async () => {
+    const { ethereum } = window;
+
     try {
       if (!ethereum) {
         alert('Please install MetaMask!');
@@ -162,6 +170,8 @@ const App = () => {
   };
 
   const wave = async () => {
+    const { ethereum } = window;
+
     try {
       if (ethereum) {
         const provider = new ethers.providers.Web3Provider(ethereum);
@@ -199,12 +209,12 @@ const App = () => {
   // runs when page loads
   useEffect(() => {
     checkIfWalletIsConnected();
-  }, []);
+  }, [checkIfWalletIsConnected]);
 
   useEffect(() => {
     getAllWaves();
     keepTheme();
-  });
+  }, [getAllWaves]);
 
   return (
     <div className="mainContainer">
