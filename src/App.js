@@ -6,6 +6,7 @@ import { keepTheme } from './utils/Theme';
 import Button from './utils/Button';
 import Toggle from './components/Toggle';
 import Toast from './components/Toast';
+import ProgressBar from './components/ProgressBar';
 import checkIcon from './assets/check.svg';
 import errorIcon from './assets/error.svg';
 import infoIcon from './assets/info.svg';
@@ -22,13 +23,11 @@ const App = () => {
   const TWITTER_HANDLE = 'p0tat0H8';
   const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
 
-  const { ethereum } = window;
-
   let toastProperties = null;
 
   const showToast = (type, text) => {
-    const id = Math.floor(Math.random() * 100 + 1);
-    const desc = text;
+    const id = Date.now();
+    const desc = text.toString();
 
     switch (type) {
       case 'success':
@@ -43,7 +42,7 @@ const App = () => {
       case 'danger':
         toastProperties = {
           id,
-          title: 'Danger',
+          title: 'Error',
           description: desc,
           backgroundColor: '#d9534f',
           icon: errorIcon,
@@ -74,6 +73,8 @@ const App = () => {
   };
 
   const getAllWaves = async () => {
+    const { ethereum } = window;
+
     try {
       if (ethereum) {
         const provider = new ethers.providers.Web3Provider(ethereum);
@@ -89,34 +90,48 @@ const App = () => {
         /*
          * We only need address, timestamp, and message in our UI
          */
-        const wavesCleaned = waves.map((wave) => {
-          return {
+        let wavesCleaned = [];
+        waves.forEach((wave) => {
+          wavesCleaned.push({
             address: wave.waver,
             timestamp: new Date(wave.timestamp * 1000),
             message: wave.message,
-          };
+          });
         });
 
         setAllWaves(wavesCleaned);
+
+        wavePortalContract.on('NewWave', (from, timestamp, message) => {
+          console.log('NewWave', from, timestamp, message);
+
+          setAllWaves((prevState) => [
+            ...prevState,
+            {
+              address: from,
+              timestamp: new Date(timestamp * 1000),
+              message: message,
+            },
+          ]);
+        });
       } else {
         console.log("Ethereum object doesn't exist!");
-        // showToast('danger', "Ethereum object doesn't exist!");
+        showToast('warning', "Ethereum object doesn't exist!");
       }
     } catch (error) {
       console.log(error);
-      showToast('danger', error);
     }
   };
 
   const checkIfWalletIsConnected = async () => {
+    const { ethereum } = window;
     try {
       if (!ethereum) {
         console.log('Make sure you have MetaMask!');
-        showToast('danger', 'Make sure you have MetaMask!');
+        showToast('warning', 'Make sure you have MetaMask!');
         return;
       } else {
         console.log('We have the ethereum object', ethereum);
-        showToast('success', `We have the ethereum object: ${ethereum}`);
+        showToast('info', `We have the ethereum object: ${ethereum}`);
       }
 
       const accounts = await ethereum.request({ method: 'eth_accounts' }); // Check if we're authorized to access the user's wallet
@@ -124,14 +139,13 @@ const App = () => {
       if (accounts.length !== 0) {
         const account = accounts[0];
         console.log(`Found an authorized account: ${account}.`);
-        showToast('success', `Found an authorized account: ${account}.`);
+        showToast('info', `Found an authorized account: ${account}.`);
       } else {
         console.log('No authorized account found.');
-        showToast('danger', 'No authorized account found.');
+        showToast('warning', 'No authorized account found.');
       }
     } catch (error) {
       console.log(error);
-      showToast('danger', error);
     }
   };
 
@@ -139,10 +153,11 @@ const App = () => {
    * Implement your connectWallet method here
    */
   const connectWallet = async () => {
+    const { ethereum } = window;
     try {
       if (!ethereum) {
         alert('Please install MetaMask!');
-        showToast('danger', 'Please install MetaMask!');
+        showToast('warning', 'Please install MetaMask!');
         return;
       }
 
@@ -157,11 +172,11 @@ const App = () => {
       getAllWaves();
     } catch (error) {
       console.log(error);
-      showToast('danger', error);
     }
   };
 
   const wave = async () => {
+    const { ethereum } = window;
     try {
       if (ethereum) {
         const provider = new ethers.providers.Web3Provider(ethereum);
@@ -181,35 +196,74 @@ const App = () => {
         setWaveMessage('');
 
         console.log('Mining...', waveTxn.hash);
-        showToast('success', `Mining... ${waveTxn.hash}`);
+        ProgressBar.start();
+        showToast('info', `Mining... ${waveTxn.hash}`);
 
         await waveTxn.wait();
         console.log('Mined -- ', waveTxn.hash);
+        ProgressBar.finish();
         showToast('success', `Mined -- ${waveTxn.hash}`);
       } else {
         console.log("Ethereum object doesn't exist!");
-        // showToast('danger', "Ethereum object doesn't exist!");
+        showToast('warning', "Ethereum object doesn't exist!");
       }
     } catch (error) {
       console.log(error);
-      showToast('danger', error);
+      showToast('danger', error.message);
     }
   };
 
   // runs when page loads
   useEffect(() => {
     checkIfWalletIsConnected();
+
+    // eslint-disable-next-line
   }, []);
 
   useEffect(() => {
-    getAllWaves();
     keepTheme();
   });
+
+  useEffect(() => {
+    let wavePortalContract;
+
+    const onNewWave = (from, timestamp, message) => {
+      console.log('NewWave', from, timestamp, message);
+      setAllWaves((prevState) => [
+        ...prevState,
+        {
+          address: from,
+          timestamp: new Date(timestamp * 1000),
+          message: message,
+        },
+      ]);
+    };
+
+    if (window.ethereum) {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+
+      wavePortalContract = new ethers.Contract(
+        contractAddress,
+        contractABI,
+        signer
+      );
+      wavePortalContract.on('NewWave', onNewWave);
+    }
+
+    return () => {
+      if (wavePortalContract) {
+        wavePortalContract.off('NewWave', onNewWave);
+      }
+    };
+
+    // eslint-disable-next-line
+  }, []);
 
   return (
     <div className="mainContainer">
       <div className="app-header"></div>
-      <Toast toastList={list} position="bottom-right" />
+      <Toast toastList={list} position="bottom-center" />
       <div className="dataContainer">
         <Toggle />
         <div className="header">Halo!</div>
@@ -224,7 +278,7 @@ const App = () => {
           Connect your Ethereum wallet and wave 👋 at me!
         </div>
 
-        {currentAccount && (
+        {currentAccount ? (
           <>
             <textarea
               name="waveMessage"
@@ -243,38 +297,41 @@ const App = () => {
               disabled={!waveMessage}
             />
           </>
-        )}
+        ) : null}
 
-        {!currentAccount && (
+        {!currentAccount ? (
           <button className="waveButton btnGrad" onClick={connectWallet}>
             Connect Wallet
           </button>
-        )}
+        ) : null}
 
-        {allWaves
-          .slice(0)
-          .reverse()
-          .map((wave, index) => {
-            return (
-              <a
-                key={index}
-                className="waveMessage"
-                href={`https://rinkeby.etherscan.io/address/${wave.address}`}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <div className="waveMessageText">
-                  <b>Address:</b> {wave.address}
-                </div>
-                <div className="waveMessageText">
-                  <b>Time:</b> {wave.timestamp.toString()}
-                </div>
-                <div className="waveMessageText">
-                  <b>Message:</b> {wave.message}
-                </div>
-              </a>
-            );
-          })}
+        {allWaves.length > 0
+          ? allWaves
+              .slice(0)
+              .reverse()
+              .map((wave, index) => {
+                return (
+                  <a
+                    key={index}
+                    className="waveMessage"
+                    href={`https://rinkeby.etherscan.io/address/${wave.address}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <div className="waveMessageText">
+                      <b>Address:</b> {wave.address}
+                    </div>
+                    <div className="waveMessageText">
+                      <b>Time:</b> {wave.timestamp.toString()}
+                    </div>
+                    <div className="waveMessageText">
+                      <b>Message:</b> {wave.message}
+                    </div>
+                  </a>
+                );
+              })
+          : null}
+
         <footer className="footerContainer">
           <div className="footerItem">
             <img alt="Twitter Logo" className="twitterLogo" src={twitterLogo} />

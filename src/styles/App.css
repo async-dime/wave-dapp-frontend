@@ -59,6 +59,10 @@ textarea:focus {
   outline: none;
 }
 
+a {
+  text-decoration: none;
+}
+
 .mainContainer {
   display: flex;
   justify-content: center;
@@ -103,7 +107,8 @@ textarea:focus {
 
 .header,
 .btnGrad,
-.footerText {
+.footerText,
+.progressBar {
   background-image: linear-gradient(
     to right,
     #d38312 0%,
@@ -134,6 +139,9 @@ textarea:focus {
   background-position: right center;
   color: #fff;
   text-decoration: none;
+}
+.btnGrad:active {
+  transform: translateY(5px);
 }
 
 .waveMessage {
