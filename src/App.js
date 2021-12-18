@@ -3,34 +3,146 @@ import { ethers } from 'ethers';
 import './styles/App.css';
 import wavePortalJson from './utils/WavePortal.json';
 import { keepTheme } from './utils/Theme';
+import Button from './utils/Button';
 import Toggle from './components/Toggle';
+import Toast from './components/Toast';
+import checkIcon from './assets/check.svg';
+import errorIcon from './assets/error.svg';
+import infoIcon from './assets/info.svg';
+import warningIcon from './assets/warning.svg';
 import twitterLogo from './assets/twitter.svg';
 
 const App = () => {
-  const [currentAccount, setCurrentAccount] = useState(''); // State variable we use to store our user's public wallet.
-  const [waveMessage, setWaveMessage] = React.useState('');  // State variable we use to store our message.
-  const [allWaves, setAllWaves] = useState([]); // All state property to store all waves
+  const [currentAccount, setCurrentAccount] = useState('');
+  const [waveMessage, setWaveMessage] = useState('');
+  const [allWaves, setAllWaves] = useState([]);
+  const [list, setList] = useState([]); // list of toasts
   const contractAddress = process.env.REACT_APP_RINKEBY_ADDRESS; // we got this address from terminal output of deployed contract on rinkeby testnet before
+  const contractABI = wavePortalJson.abi; // this is json file that compiler make when we create the smart contract. location: artifacts/contracts/WavePortal.sol/WavePortal.json`
   const TWITTER_HANDLE = 'p0tat0H8';
   const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
 
-  /**
-   * this is json file that compiler make when we create the smart contract
-   * location on the hardhat project:
-   * `artifacts/contracts/WavePortal.sol/WavePortal.json`
-   * however, we only need the abi prop.
-   */
-  const contractABI = wavePortalJson.abi;
+  const { ethereum } = window;
+
+  let toastProperties = null;
+
+  const showToast = (type, text) => {
+    const id = Math.floor(Math.random() * 100 + 1);
+    const desc = text;
+
+    switch (type) {
+      case 'success':
+        toastProperties = {
+          id,
+          title: 'Success',
+          description: desc,
+          backgroundColor: '#5cb85c',
+          icon: checkIcon,
+        };
+        break;
+      case 'danger':
+        toastProperties = {
+          id,
+          title: 'Danger',
+          description: desc,
+          backgroundColor: '#d9534f',
+          icon: errorIcon,
+        };
+        break;
+      case 'info':
+        toastProperties = {
+          id,
+          title: 'Info',
+          description: desc,
+          backgroundColor: '#5bc0de',
+          icon: infoIcon,
+        };
+        break;
+      case 'warning':
+        toastProperties = {
+          id,
+          title: 'Warning',
+          description: desc,
+          backgroundColor: '#f0ad4e',
+          icon: warningIcon,
+        };
+        break;
+      default:
+        setList([]);
+    }
+    setList([...list, toastProperties]);
+  };
+
+  const getAllWaves = async () => {
+    try {
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        const wavePortalContract = new ethers.Contract(
+          contractAddress,
+          contractABI,
+          signer
+        );
+
+        const waves = await wavePortalContract.getAllWaves(); // Call the getAllWaves method from your Smart Contract
+
+        /*
+         * We only need address, timestamp, and message in our UI
+         */
+        const wavesCleaned = waves.map((wave) => {
+          return {
+            address: wave.waver,
+            timestamp: new Date(wave.timestamp * 1000),
+            message: wave.message,
+          };
+        });
+
+        setAllWaves(wavesCleaned);
+      } else {
+        console.log("Ethereum object doesn't exist!");
+        showToast('error', "Ethereum object doesn't exist!");
+      }
+    } catch (error) {
+      console.log(error);
+      showToast('error', error);
+    }
+  };
+
+  const checkIfWalletIsConnected = async () => {
+    try {
+      if (!ethereum) {
+        console.log('Make sure you have MetaMask!');
+        showToast('warning', 'Make sure you have MetaMask!');
+        return;
+      } else {
+        console.log('We have the ethereum object', ethereum);
+        showToast('success', `We have the ethereum object: ${ethereum}`);
+      }
+
+      const accounts = await ethereum.request({ method: 'eth_accounts' }); // Check if we're authorized to access the user's wallet
+
+      if (accounts.length !== 0) {
+        const account = accounts[0];
+        console.log(`Found an authorized account: ${account}.`);
+        showToast('success', `Found an authorized account: ${account}.`);
+      } else {
+        console.log('No authorized account found.');
+        showToast('error', 'No authorized account found.');
+      }
+    } catch (error) {
+      console.log(error);
+      showToast('error', error);
+    }
+  };
 
   /**
    * Implement your connectWallet method here
    */
   const connectWallet = async () => {
     try {
-      const { ethereum } = window;
-
       if (!ethereum) {
-        alert('Get MetaMask!');
+        alert('Please install MetaMask!');
+        showToast('error', 'Please install MetaMask!');
         return;
       }
 
@@ -39,46 +151,18 @@ const App = () => {
       });
 
       console.log('Connected', accounts[0]);
+      showToast('success', `Connected: ${accounts[0]}`);
       setCurrentAccount(accounts[0]);
+
+      getAllWaves();
     } catch (error) {
       console.log(error);
-    }
-  };
-
-  const checkIfWalletIsConnected = async () => {
-    try {
-      /*
-       * First make sure we have access to window.ethereum
-       */
-      const { ethereum } = window;
-      if (!ethereum) {
-        console.log('Make sure you have Metamask!');
-        return;
-      } else {
-        console.log('We have the ethereum object', ethereum);
-      }
-
-      /*
-       * Check if we're authorized to access the user's wallet
-       */
-      const accounts = await ethereum.request({ method: 'eth_accounts' });  
-
-      if (accounts.length !== 0) {
-        const account = accounts[0];
-        console.log(`Found an authorized account: ${account}.`);
-        setCurrentAccount(account);
-      } else {
-        console.log('No authorized account found.');
-      }
-    } catch (error) {
-      console.log(error);
+      showToast('error', error);
     }
   };
 
   const wave = async () => {
     try {
-      const { ethereum } = window;
-
       if (ethereum) {
         const provider = new ethers.providers.Web3Provider(ethereum);
         const signer = provider.getSigner();
@@ -87,91 +171,45 @@ const App = () => {
           contractABI,
           signer
         );
-
-        let count = await wavePortalContract.getTotalWaves();
-        console.log('Retrieved total wave count...', count.toNumber());
 
         /*
          * Execute the actual wave from your smart contract
          */
         const waveTxn = await wavePortalContract.wave(waveMessage, {
-          gasLimit: 300000,
+          gasLimit: 500000,
         });
+        setWaveMessage('');
+
         console.log('Mining...', waveTxn.hash);
+        showToast('success', `Mining... ${waveTxn.hash}`);
 
         await waveTxn.wait();
         console.log('Mined -- ', waveTxn.hash);
-
-        count = await wavePortalContract.getTotalWaves();
-        console.log('Retrieved total wave count...', count.toNumber());
+        showToast('success', `Mined -- ${waveTxn.hash}`);
       } else {
         console.log("Ethereum object doesn't exist!");
+        showToast('error', "Ethereum object doesn't exist!");
       }
     } catch (error) {
       console.log(error);
-    }
-  };
-
-  /*
-   * Create a method that gets all waves from your contract
-   */
-  const getAllWaves = async () => {
-    try {
-      const { ethereum } = window;
-      if (ethereum) {
-        const provider = new ethers.providers.Web3Provider(ethereum);
-        const signer = provider.getSigner();
-        const wavePortalContract = new ethers.Contract(
-          contractAddress,
-          contractABI,
-          signer
-        );
-
-        /*
-         * Call the getAllWaves method from your Smart Contract
-         */
-        const waves = await wavePortalContract.getAllWaves();
-
-        /*
-         * We only need address, timestamp, and message in our UI so let's
-         * pick those out
-         */
-        let wavesCleaned = [];
-        waves.forEach((wave) => {
-          wavesCleaned.push({
-            address: wave.waver,
-            timestamp: new Date(wave.timestamp * 1000),
-            message: wave.message,
-          });
-        });
-
-        /*
-         * Store our data in React State
-         */
-        setAllWaves(wavesCleaned);
-      } else {
-        console.log("Ethereum object doesn't exist!");
-      }
-    } catch (error) {
-      console.log(error);
+      showToast('error', error);
     }
   };
 
   // runs when page loads
   useEffect(() => {
     checkIfWalletIsConnected();
-  }, []);
+  }, [ethereum]);
 
   useEffect(() => {
     getAllWaves();
-  });
-
-  useEffect(() => {
     keepTheme();
   });
 
   return (
     <div className="mainContainer">
+      <div className="app-header"></div>
+      <Toast toastList={list} position="bottom-right" />
       <div className="dataContainer">
         <Toggle />
         <div className="header">Halo!</div>
@@ -198,15 +236,12 @@ const App = () => {
               value={waveMessage}
               onChange={(e) => setWaveMessage(e.target.value)}
             />
-            <button
+            <Button
               className="waveButton btnGrad"
-              onClick={wave}
+              label="👋"
+              handleClick={() => wave()}
               disabled={!waveMessage}
-            >
-              <span role="img" aria-label="waving hand">
-                👋
-              </span>
-            </button>
+            />
           </>
         )}
 
@@ -216,29 +251,41 @@ const App = () => {
           </button>
         )}
 
-        {allWaves.map((wave, index) => {
-          return (
-            <div key={index} className="waveMessage">
-              <div className="waveMessageText">
-                <b>Address:</b> {wave.address}
-              </div>
-              <div className="waveMessageText">
-                <b>Time:</b> {wave.timestamp.toString()}
-              </div>
-              <div className="waveMessageText">
-                <b>Message:</b> {wave?.message}
-              </div>
-            </div>
-          );
-        })}
+        {allWaves
+          .slice(0)
+          .reverse()
+          .map((wave, index) => {
+            return (
+              <a
+                key={index}
+                className="waveMessage"
+                href={`https://rinkeby.etherscan.io/address/${wave.address}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <div className="waveMessageText">
+                  <b>Address:</b> {wave.address}
+                </div>
+                <div className="waveMessageText">
+                  <b>Time:</b> {wave.timestamp.toString()}
+                </div>
+                <div className="waveMessageText">
+                  <b>Message:</b> {wave.message}
+                </div>
+              </a>
+            );
+          })}
         <footer className="footerContainer">
-          <img alt="Twitter Logo" className="twitterLogo" src={twitterLogo} />{' '}
-          <a
-            className="footerText"
-            href={TWITTER_LINK}
-            target="_blank"
-            rel="noopener noreferrer"
-          >{`built by @${TWITTER_HANDLE}`}</a>
+          <div className="footerItem">
+            <img alt="Twitter Logo" className="twitterLogo" src={twitterLogo} />
+            {'  '}
+            <a
+              className="footerText"
+              href={TWITTER_LINK}
+              target="_blank"
+              rel="noopener noreferrer"
+            >{`built by @${TWITTER_HANDLE}`}</a>
+          </div>
         </footer>
       </div>
     </div>
