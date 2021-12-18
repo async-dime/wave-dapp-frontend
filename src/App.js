@@ -100,7 +100,7 @@ const App = () => {
         setAllWaves(wavesCleaned);
       } else {
         console.log("Ethereum object doesn't exist!");
-        showToast('danger', "Ethereum object doesn't exist!");
+        // showToast('danger', "Ethereum object doesn't exist!");
       }
     } catch (error) {
       console.log(error);
@@ -188,7 +188,7 @@ const App = () => {
         showToast('success', `Mined -- ${waveTxn.hash}`);
       } else {
         console.log("Ethereum object doesn't exist!");
-        showToast('danger', "Ethereum object doesn't exist!");
+        // showToast('danger', "Ethereum object doesn't exist!");
       }
     } catch (error) {
       console.log(error);
@@ -199,7 +199,7 @@ const App = () => {
   // runs when page loads
   useEffect(() => {
     checkIfWalletIsConnected();
-  }, [ethereum]);
+  }, []);
 
   useEffect(() => {
     getAllWaves();
