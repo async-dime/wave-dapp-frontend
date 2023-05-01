@@ -20,7 +20,7 @@ const App = () => {
   const [list, setList] = useState([]); // list of toasts
   const contractAddress = process.env.REACT_APP_RINKEBY_ADDRESS; // we got this address from terminal output of deployed contract on rinkeby testnet before
   const contractABI = wavePortalJson.abi; // this is json file that compiler make when we create the smart contract. location: artifacts/contracts/WavePortal.sol/WavePortal.json`
-  const TWITTER_HANDLE = 'p0tat0H8';
+  const TWITTER_HANDLE = 'async_dime';
   const TWITTER_LINK = `https://twitter.com/${TWITTER_HANDLE}`;
 
   let toastProperties = null;
